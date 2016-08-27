@@ -4,6 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var exphbs  = require('express-handlebars');
+var hbs = require('handlebars');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -13,6 +15,41 @@ var app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
+
+//hbs配置
+app.engine('hbs', exphbs({
+  layoutsDir: 'views',
+  defaultLayout: 'layout',
+  extname: '.hbs',
+  partialsDir: [
+    'views'
+  ]
+}));
+app.set('view engine', 'hbs');
+
+
+//hbs覆盖模块
+var blocks = {};
+
+hbs.registerHelper('extend', function(name, context) {
+  var block = blocks[name];
+  if (!block) {
+    block = blocks[name] = [];
+  }
+
+  block.push(context.fn(this)); // for older versions of handlebars, use block.push(context(this));
+});
+
+hbs.registerHelper('block', function(name) {
+  var val = (blocks[name] || []).join('\n');
+
+  // clear the block
+  blocks[name] = [];
+  return val;
+});
+
+
+
 
 
 // uncomment after placing your favicon in /public
